@@ -18,28 +18,43 @@ class AppDelegate: UIResponder, UIApplicationDelegate{
     var kETAccessToken_Prod: String = "change_this_to_your_production_accessToken"
     
     func application(application: UIApplication, didFinishLaunchingWithOptions launchOptions: [NSObject: AnyObject]?) -> Bool {
-        // Override point for customization after application launch.
+
         var successful: Bool = false
-        var error: NSError? = nil
+        //var error : NSError?
         
 #if DEBUG
         ETPush.setETLoggerToRequiredState(true)
  
-        successful =  ETPush.pushManager().configureSDKWithAppID(kETAppID_Debug,
+        successful =  ETPush.pushManager()!.configureSDKWithAppID(kETAppID_Debug,
                                            andAccessToken: kETAccessToken_Debug,
                                            withAnalytics: true,
-                                           andLocationServices: true,
-                                           andProximityServices: true,
-                                           andCloudPages: true,
+                                           andLocationServices: false,
+                                           andProximityServices: false,
+                                           andCloudPages: false,
                                            withPIAnalytics: true,
                                            error: error)
-
+    NSLog("1")
 #else
-    print("error")
-            
+    do{
+        try ETPush.pushManager()!.configureSDKWithAppID(kETAccessToken_Debug,
+                                                                     andAccessToken: kETAccessToken_Debug,
+                                                                     withAnalytics: true,
+                                                                     andLocationServices: false,
+                                                                     andProximityServices: false,
+                                                                     andCloudPages: false,
+                                                                     withPIAnalytics: true)
+    }catch let error as NSError{
+         print("Error: \(error.domain)")
+    }
+    
+        
+    NSLog("2")
+    
 #endif
-        
-        
+    NSLog("1")
+        if (!successful) {
+        } else {
+        }
         
         let settings = UIUserNotificationSettings(forTypes: [.Alert, .Badge , .Sound], categories: nil)
         ETPush.pushManager()?.registerUserNotificationSettings(settings)
@@ -50,7 +65,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate{
         ETPush.pushManager()?.applicationLaunchedWithOptions(launchOptions)
         ETPush.pushManager()?.addAttributeNamed("MyBooleanAttribute", value: "0")
         ETPush.getSDKState()
+            
+    
         return true
+
     }
     func application(application: UIApplication, didRegisterUserNotificationSettings notificationSettings: UIUserNotificationSettings){
         ETPush.pushManager()?.didRegisterUserNotificationSettings(notificationSettings)
