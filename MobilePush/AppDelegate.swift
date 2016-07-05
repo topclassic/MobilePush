@@ -7,66 +7,72 @@
 //
 
 import UIKit
-
+import CoreLocation
 @UIApplicationMain
-class AppDelegate: UIResponder, UIApplicationDelegate{
-    
+class AppDelegate: UIResponder, UIApplicationDelegate, CLLocationManagerDelegate {
+    let locationManager = CLLocationManager()
     var window: UIWindow?
-    var kETAppID_Debug: String = "change_this_to_your_debug_appId"
-    var kETAccessToken_Debug: String = "change_this_to_your_debug_accessToken"
-    var kETAppID_Prod: String = "change_this_to_your_production_appId"
-    var kETAccessToken_Prod: String = "change_this_to_your_production_accessToken"
-    
+    var kETAppID_Debug: String = "185cf108-0689-4613-af04-529e72506995"
+    var kETAccessToken_Debug: String = "by4xt7j9r5bh9j5jhu65hj85"
+    var kETAppID_Prod: String = "185cf108-0689-4613-af04-529e72506995"
+    var kETAccessToken_Prod: String = "by4xt7j9r5bh9j5jhu65hj85"
     func application(application: UIApplication, didFinishLaunchingWithOptions launchOptions: [NSObject: AnyObject]?) -> Bool {
 
         var successful: Bool = false
+        locationManager.delegate = self
+        if (CLLocationManager.authorizationStatus() != CLAuthorizationStatus.AuthorizedWhenInUse) {
+            locationManager.requestWhenInUseAuthorization()
+        }
+
         //var error : NSError?
         
 #if DEBUG
         ETPush.setETLoggerToRequiredState(true)
- 
-        successful =  ETPush.pushManager()!.configureSDKWithAppID(kETAppID_Debug,
-                                           andAccessToken: kETAccessToken_Debug,
-                                           withAnalytics: true,
-                                           andLocationServices: false,
-                                           andProximityServices: false,
-                                           andCloudPages: false,
-                                           withPIAnalytics: true,
-                                           error: error)
-    NSLog("1")
-#else
-    do{
-        try ETPush.pushManager()!.configureSDKWithAppID(kETAccessToken_Debug,
-                                                                     andAccessToken: kETAccessToken_Debug,
-                                                                     withAnalytics: true,
-                                                                     andLocationServices: false,
-                                                                     andProximityServices: false,
-                                                                     andCloudPages: false,
-                                                                     withPIAnalytics: true)
-    }catch let error as NSError{
-         print("Error: \(error.domain)")
-    }
-    
-        
-    NSLog("2")
-    
-#endif
-    NSLog("1")
-        if (!successful) {
-        } else {
+        successful = false
+        do {
+            try ETPush.pushManager()?.configureSDKWithAppID(kETAccessToken_Debug,
+                                                        andAccessToken: kETAccessToken_Debug,
+                                                        withAnalytics: true,
+                                                        andLocationServices: true,
+                                                        andProximityServices: true,
+                                                        andCloudPages: true,
+                                                        withPIAnalytics: true)
+        } catch let error as NSError {
+            NSLog("Error 2: \(error)")
         }
+        NSLog("0")
+#else
+        ETPush.setETLoggerToRequiredState(true)
+        successful = true
+        do {
+            try ETPush.pushManager()!.configureSDKWithAppID(kETAccessToken_Debug,
+                                                            andAccessToken: kETAccessToken_Debug,
+                                                            withAnalytics: true,
+                                                            andLocationServices: true,
+                                                            andProximityServices: true,
+                                                            andCloudPages: true,
+                                                            withPIAnalytics: true)
+        } catch let error as NSError {
+            NSLog("Error2: \(error)")
+        }
+        NSLog("1")
+#endif
         
-        let settings = UIUserNotificationSettings(forTypes: [.Alert, .Badge , .Sound], categories: nil)
-        ETPush.pushManager()?.registerUserNotificationSettings(settings)
-        ETPush.pushManager()?.registerForRemoteNotifications()
-        ETLocationManager.sharedInstance().startWatchingLocation()
-        ETRegion.retrieveGeofencesFromET()
-        ETRegion.retrieveProximityFromET()
-        ETPush.pushManager()?.applicationLaunchedWithOptions(launchOptions)
-        ETPush.pushManager()?.addAttributeNamed("MyBooleanAttribute", value: "0")
-        ETPush.getSDKState()
-            
-    
+        if (successful == false) {
+            //print("3")
+        } else {
+            let settings = UIUserNotificationSettings(forTypes: [.Alert, .Badge , .Sound], categories: nil)
+            ETPush.pushManager()?.registerUserNotificationSettings(settings)
+            ETPush.pushManager()?.registerForRemoteNotifications()
+            ETLocationManager.sharedInstance().startWatchingLocation()
+            ETRegion.retrieveGeofencesFromET()
+            ETRegion.retrieveProximityFromET()
+            ETPush.pushManager()?.applicationLaunchedWithOptions(launchOptions)
+            ETPush.pushManager()?.addAttributeNamed("MyBooleanAttribute", value: "0")
+            ETPush.getSDKState()
+            print("4")
+        }
+
         return true
 
     }
@@ -115,4 +121,3 @@ class AppDelegate: UIResponder, UIApplicationDelegate{
     }
 
 }
-
