@@ -12,17 +12,13 @@ import CoreLocation
 class AppDelegate: UIResponder, UIApplicationDelegate, CLLocationManagerDelegate {
     let locationManager = CLLocationManager()
     var window: UIWindow?
-    var kETAppID_Debug: String = "185cf108-0689-4613-af04-529e72506995"
-    var kETAccessToken_Debug: String = "by4xt7j9r5bh9j5jhu65hj85"
-    var kETAppID_Prod: String = "185cf108-0689-4613-af04-529e72506995"
-    var kETAccessToken_Prod: String = "by4xt7j9r5bh9j5jhu65hj85"
+    var kETAppID_Debug: String = "fe33ce02-918e-402d-9a3b-9caa6fc5299b"
+    var kETAccessToken_Debug: String = "622qbc9ey45nk2jypa275gcw"
+    var kETAppID_Prod: String = "fe33ce02-918e-402d-9a3b-9caa6fc5299b"
+    var kETAccessToken_Prod: String = "622qbc9ey45nk2jypa275gcw"
     func application(application: UIApplication, didFinishLaunchingWithOptions launchOptions: [NSObject: AnyObject]?) -> Bool {
 
         var successful: Bool = false
-        locationManager.delegate = self
-        if (CLLocationManager.authorizationStatus() != CLAuthorizationStatus.AuthorizedWhenInUse) {
-            locationManager.requestWhenInUseAuthorization()
-        }
 
         //var error : NSError?
         
@@ -30,11 +26,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CLLocationManagerDelegate
         ETPush.setETLoggerToRequiredState(true)
         successful = false
         do {
-            try ETPush.pushManager()?.configureSDKWithAppID(kETAccessToken_Debug,
+            try ETPush.pushManager()?.configureSDKWithAppID(kETAppID_Debug,
                                                         andAccessToken: kETAccessToken_Debug,
                                                         withAnalytics: true,
                                                         andLocationServices: true,
-                                                        andProximityServices: true,
+                                                        andProximityServices: false,
                                                         andCloudPages: true,
                                                         withPIAnalytics: true)
         } catch let error as NSError {
@@ -45,11 +41,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CLLocationManagerDelegate
         ETPush.setETLoggerToRequiredState(true)
         successful = true
         do {
-            try ETPush.pushManager()!.configureSDKWithAppID(kETAccessToken_Debug,
+            try ETPush.pushManager()!.configureSDKWithAppID(kETAppID_Debug,
                                                             andAccessToken: kETAccessToken_Debug,
                                                             withAnalytics: true,
                                                             andLocationServices: true,
-                                                            andProximityServices: true,
+                                                            andProximityServices: false,
                                                             andCloudPages: true,
                                                             withPIAnalytics: true)
         } catch let error as NSError {
@@ -64,17 +60,27 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CLLocationManagerDelegate
             let settings = UIUserNotificationSettings(forTypes: [.Alert, .Badge , .Sound], categories: nil)
             ETPush.pushManager()?.registerUserNotificationSettings(settings)
             ETPush.pushManager()?.registerForRemoteNotifications()
-            ETLocationManager.sharedInstance().startWatchingLocation()
+           // ETLocationManager.sharedInstance().startWatchingLocation()
             ETRegion.retrieveGeofencesFromET()
             ETRegion.retrieveProximityFromET()
             ETPush.pushManager()?.applicationLaunchedWithOptions(launchOptions)
             ETPush.pushManager()?.addAttributeNamed("MyBooleanAttribute", value: "0")
             ETPush.getSDKState()
+            askUserToOpenLocationServices()
             print("4")
         }
 
         return true
 
+    }
+    func askUserToOpenLocationServices(){
+        locationManager.delegate = self
+        if (CLLocationManager.authorizationStatus() != CLAuthorizationStatus.AuthorizedWhenInUse) {
+            locationManager.requestWhenInUseAuthorization()
+        locationManager.desiredAccuracy = kCLLocationAccuracyBest
+        locationManager.requestAlwaysAuthorization()
+        locationManager.startUpdatingLocation()
+        }
     }
     func application(application: UIApplication, didRegisterUserNotificationSettings notificationSettings: UIUserNotificationSettings){
         ETPush.pushManager()?.didRegisterUserNotificationSettings(notificationSettings)
@@ -94,7 +100,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CLLocationManagerDelegate
     func applicationDidEnterBackground(application: UIApplication) {
         // Use this method to release shared resources, save user data, invalidate timers, and store enough application state information to restore your application to its current state in case it is terminated later.
         // If your application supports background execution, this method is called instead of applicationWillTerminate: when the user quits.
-         ETLocationManager.sharedInstance().startWatchingLocation()
     }
     
     func applicationWillEnterForeground(application: UIApplication) {
@@ -103,7 +108,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CLLocationManagerDelegate
     
     func applicationDidBecomeActive(application: UIApplication) {
         // Restart any tasks that were paused (or not yet started) while the application was inactive. If the application was previously in the background, optionally refresh the user interface.
-        ETLocationManager.sharedInstance().stopWatchingLocation()
     }
     
     func applicationWillTerminate(application: UIApplication) {
